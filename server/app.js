@@ -19,23 +19,29 @@ const io = new Server(server, {
 });
 
 app.use(cors());
+const timers = {};
 
 io.on('connection', (socket) => {
     socket.on('bid', async (bidData) => {
         try {
             const { teamid, playerid, amount } = bidData;
-            console.log(bidData);
+            
+          console.log(bidData);
+          
             const team = await TeamModel.findOne({ teamid });
+           
 
             if (!team) return socket.emit('error', 'Invalid Team ID!');
 
             const player = await PlayerModel.findOne({ playerid }).populate('teamid');
             if (!player) return socket.emit('error', 'Invalid Player ID!');
 
+           
+
             if (player.teamid.teamid == teamid || !player.status)
                 return socket.emit('error', 'You cannot bid for this Player!');
 
-            if (player.baseprice <= +amount)
+            if (player.baseprice >= +amount)
                 return socket.emit('error', 'Your Bid Amount is too low!');
 
             // Player is onBid
@@ -44,18 +50,32 @@ io.on('connection', (socket) => {
             // if (currentBid && currentBid > amount)
             //     return socket.emit('error', 'Your Bid Amount is too low!');
 
-            await redisClient.set(playerid, +amount, { EX: 90 });
+            await redisClient.set(String(playerid), +amount, "EX", 20);
 
-            setTimeout(async () => {
+            io.emit('bid-placed', { playerid, teamid, amount });
+
+            // console.log("updating");
+            
+
+            if (timers[playerid]) clearTimeout(timers[playerid]);
+
+            timers[playerid] = setTimeout(async () => {
                 try {
+                    await TeamModel.updateOne(
+                        { _id: player.teamid._id },
+                        { $pull: { players: player._id } } 
+                    );
                     await PlayerModel.updateOne({ playerid }, { teamid: team._id, status: false });
-                    team.players = team.players.filter(id => id != player._id);
-                    await TeamModel.save();
-                    return socket.emit('update');
+                    await TeamModel.updateOne(
+                        { _id: team._id },
+                        { $push: { players: player._id } } // Ensure `_id` types match
+                    );
+                    io.emit('update');
                 } catch (error) {
                     return socket.emit('error', 'Something Went Wrong!');
                 }
-            }, 90 * 1000);
+            }, 20 * 1000);
+
 
         } catch (error) {
             console.log(error);
