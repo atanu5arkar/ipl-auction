@@ -22,6 +22,13 @@ const playerSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    currentbid: {
+        type: Number
+    },
+    endbid: {
+        type: Number,
+        default: null
+    },
     status: {
         type: Boolean,
         required: true

@@ -20,42 +20,59 @@ const io = new Server(server, {
 
 app.use(cors());
 
+const timers = {}
+
 io.on('connection', (socket) => {
+
+    function setTimer(team, player) {
+        const { playerid, _id } = player;
+
+        const timeout = setTimeout(async () => {
+            try {
+                await PlayerModel.updateOne({ playerid }, { teamid: team._id, status: false });
+
+                // Update the new team
+                await TeamModel.updateOne({ _id: team._id }, { $push: { players: player._id } });
+
+                // Update the old team
+                await TeamModel.updateOne({ teamid: player.teamid.teamid }, { $pull: { players: player._id } });
+                return io.emit('update');
+            } catch (error) {
+                return socket.emit('error', 'Something Went Wrong!');
+            }
+        }, 90 * 1000);
+        return timers[playerid] = timeout;
+    }
+
     socket.on('bid', async (bidData) => {
         try {
-            const { teamid, playerid, amount } = bidData;
-            console.log(bidData);
-            const team = await TeamModel.findOne({ teamid });
+            let { teamid, playerid, amount } = bidData;
 
+            const team = await TeamModel.findOne({ teamid });
             if (!team) return socket.emit('error', 'Invalid Team ID!');
 
             const player = await PlayerModel.findOne({ playerid }).populate('teamid');
             if (!player) return socket.emit('error', 'Invalid Player ID!');
 
+            // No bidding if the player is placed or already on the team
             if (player.teamid.teamid == teamid || !player.status)
-                return socket.emit('error', 'You cannot bid for this Player!');
+                return socket.emit('error', 'You cannot bid for the Player!');
 
-            if (player.baseprice <= +amount)
-                return socket.emit('error', 'Your Bid Amount is too low!');
+            if (player.baseprice >= +amount)
+                return socket.emit('error', 'Your Bid is Too Low!');
 
-            // Player is onBid
-            // const currentBid = await redisClient.get(playerid);
+            if (player.currentbid) {
+                if (player.currentbid >= amount)
+                    return socket.emit('error', 'Your Bid is Too Low!');
 
-            // if (currentBid && currentBid > amount)
-            //     return socket.emit('error', 'Your Bid Amount is too low!');
+                const timerid = timers[playerid];
+                if (timerid) clearTimeout(timerid);
+            }
 
-            await redisClient.set(playerid, +amount, { EX: 90 });
+            setTimer(team, player);
 
-            setTimeout(async () => {
-                try {
-                    await PlayerModel.updateOne({ playerid }, { teamid: team._id, status: false });
-                    team.players = team.players.filter(id => id != player._id);
-                    await TeamModel.save();
-                    return socket.emit('update');
-                } catch (error) {
-                    return socket.emit('error', 'Something Went Wrong!');
-                }
-            }, 90 * 1000);
+            await PlayerModel.updateOne({ playerid }, { currentbid: amount, endbid: Date.now() + 90 * 1000 });
+            return io.emit('update');
 
         } catch (error) {
             console.log(error);
