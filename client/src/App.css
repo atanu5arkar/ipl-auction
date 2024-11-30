@@ -192,3 +192,244 @@ td {
     background-color: #e24136;
     color: white;
 }
+
+
+
+/* Login Page Container */
+.login-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh; /* Full viewport height */
+  padding: 20px;
+}
+
+/* Login Form Styling */
+.bidding-form.login-form {
+  background-color: #ffffff; /* White background for contrast */
+  border: none; /* Remove default border */
+  border-radius: 10px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); /* Slight shadow for depth */
+  max-width: 400px;
+  padding: 20px;
+  text-align: center;
+  width: 100%; /* Full width for small screens */
+  animation: fadeIn 0.5s ease; /* Subtle fade-in animation */
+}
+
+/* Fade-in Animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Login Form Heading */
+.bidding-form.login-form h2 {
+  font-size: 1.8em;
+  color: #333;
+  margin-bottom: 20px;
+}
+
+/* Input Fields Styling */
+.form-group input {
+  width: 100%;
+  padding: 12px;
+  margin-top: 5px;
+  margin-bottom: 15px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 1em;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* Focus Effect on Input */
+.form-group input:focus {
+  border-color: #007bff;
+  box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+  outline: none;
+}
+
+/* Submit Button Styling */
+.submit-btn {
+  background-color: #007bff;
+  color: #ffffff;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 6px;
+  font-size: 1em;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  width: 100%; /* Full width for mobile-friendly design */
+}
+
+.submit-btn:hover {
+  background-color: #0056b3;
+  transform: translateY(-2px); /* Subtle lifting effect */
+}
+
+.submit-btn:active {
+  transform: translateY(1px); /* Depress effect on click */
+}
+
+/* Error Message Styling */
+.error-message {
+  background-color: #e24136;
+  color: #ffffff;
+  border-radius: 6px;
+  padding: 10px;
+  margin-bottom: 15px;
+  font-size: 0.9em;
+  text-align: center;
+  animation: shake 0.3s ease; /* Shake animation for error */
+}
+
+/* Shake Animation */
+@keyframes shake {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  25%, 75% {
+    transform: translateX(-5px);
+  }
+  50% {
+    transform: translateX(5px);
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .bidding-form.login-form {
+    padding: 15px;
+  }
+
+  .submit-btn {
+    font-size: 0.9em;
+  }
+}
+
+
+
+/* Login Page Container */
+.login-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh; /* Full viewport height */
+    padding: 20px;
+  }
+  
+  /* Login Form Styling */
+  .bidding-form.login-form {
+    background-color: #ffffff; /* White background for contrast */
+    border: none; /* Remove default border */
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); /* Slight shadow for depth */
+    max-width: 400px;
+    padding: 20px;
+    text-align: center;
+    width: 100%; /* Full width for small screens */
+    animation: fadeIn 0.5s ease; /* Subtle fade-in animation */
+  }
+  
+  /* Fade-in Animation */
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  /* Login Form Heading */
+  .bidding-form.login-form h2 {
+    font-size: 1.8em;
+    color: #333;
+    margin-bottom: 20px;
+  }
+  
+  /* Input Fields Styling */
+  .form-group input {
+    width: 100%;
+    padding: 12px;
+    margin-top: 5px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 1em;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  }
+  
+  /* Focus Effect on Input */
+  .form-group input:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+    outline: none;
+  }
+  
+  /* Submit Button Styling */
+  .submit-btn {
+    background-color: #007bff;
+    color: #ffffff;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 6px;
+    font-size: 1em;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    width: 100%; /* Full width for mobile-friendly design */
+  }
+  
+  .submit-btn:hover {
+    background-color: #0056b3;
+    transform: translateY(-2px); /* Subtle lifting effect */
+  }
+  
+  .submit-btn:active {
+    transform: translateY(1px); /* Depress effect on click */
+  }
+  
+  /* Error Message Styling */
+  .error-message {
+    background-color: #e24136;
+    color: #ffffff;
+    border-radius: 6px;
+    padding: 10px;
+    margin-bottom: 15px;
+    font-size: 0.9em;
+    text-align: center;
+    animation: shake 0.3s ease; /* Shake animation for error */
+  }
+  
+  /* Shake Animation */
+  @keyframes shake {
+    0%, 100% {
+      transform: translateX(0);
+    }
+    25%, 75% {
+      transform: translateX(-5px);
+    }
+    50% {
+      transform: translateX(5px);
+    }
+  }
+  
+  /* Responsive Design */
+  @media (max-width: 768px) {
+    .bidding-form.login-form {
+      padding: 15px;
+    }
+  
+    .submit-btn {
+      font-size: 0.9em;
+    }
+  }
+  
