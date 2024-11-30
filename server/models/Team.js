@@ -9,6 +9,10 @@ const teamSchema = new mongoose.Schema({
         type: Number,
         required: true
     },
+    password: {
+        type: String,
+        required: true
+    },
     players: [{ 
         type: mongoose.Schema.Types.ObjectId,
         ref: 'player'

@@ -2,9 +2,11 @@ import express from "express";
 import http from "http";
 import { Server } from "socket.io";
 import cors from "cors";
+import jwt from "jsonwebtoken";
+import bcrypt from "bcrypt";
 
 import "./utils/dbConnect.js";
-import redisClient from "./utils/redisClient.js";
+import authMiddleware from "./middlewares/auth.js";
 
 import TeamModel from "./models/Team.js";
 import PlayerModel from "./models/Player.js";
@@ -19,8 +21,21 @@ const io = new Server(server, {
 });
 
 app.use(cors());
+app.use(express.json());
 
 const timers = {}
+
+// Socket Authentication
+io.use((socket, next) => {
+    try {
+        const token = socket.handshake.auth.token;
+        if (!token) return next(new Error('Token not available!'));
+        const payload = jwt.verify(token, 'sherl0ck');
+        return next();
+    } catch (error) {
+        return next(new Error('Invalid Token!'));
+    }
+});
 
 io.on('connection', (socket) => {
 
@@ -36,8 +51,10 @@ io.on('connection', (socket) => {
 
                 // Update the old team
                 await TeamModel.updateOne({ teamid: player.teamid.teamid }, { $pull: { players: player._id } });
-                return io.emit('update');
+                return io.emit('update', `${player.fullname} is Sold to ${team.team}.`);
+
             } catch (error) {
+                console.log(error);
                 return socket.emit('error', 'Something Went Wrong!');
             }
         }, 90 * 1000);
@@ -72,7 +89,7 @@ io.on('connection', (socket) => {
             setTimer(team, player);
 
             await PlayerModel.updateOne({ playerid }, { currentbid: amount, endbid: Date.now() + 90 * 1000 });
-            return io.emit('update');
+            return io.emit('update', `${player.fullname} is On Bid for ${amount} Lakhs by ${team.team}.`);
 
         } catch (error) {
             console.log(error);
@@ -81,10 +98,36 @@ io.on('connection', (socket) => {
     });
 });
 
-app.get('/', async (req, res) => {
+app.get('/', authMiddleware, async (req, res) => {
     try {
         const teamData = await TeamModel.find({}).populate('players');
         return res.status(200).json(teamData);
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({ msg: 'Internal Server Error!' });
+    }
+});
+
+app.get('/auth', authMiddleware, (req, res) => {
+    const { teamId } = req.team;
+    return res.status(200).json({ teamId });
+});
+
+app.post('/login', async (req, res) => {
+    try {
+        const { teamId, password } = req.body;
+
+        const team = await TeamModel.findOne({ teamid: +teamId });
+        if (!team)
+            return res.status(400).json({ msg: 'Invalid Credentials!' });
+
+        const isPasswdValid = await bcrypt.compare(password, team.password);
+        if (!isPasswdValid)
+            return res.status(400).json({ msg: 'Invalid Credentials!' });
+
+        const token = jwt.sign({ teamId }, 'sherl0ck', { expiresIn: '4h' });
+        return res.status(200).json({ token });
+
     } catch (error) {
         console.log(error);
         return res.status(500).json({ msg: 'Internal Server Error!' });
