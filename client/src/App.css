@@ -26,6 +26,7 @@
 .bidding-form h2 {
     margin-bottom: 20px;
     font-size: 1.5em;
+    font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
     color: #333;
 }
 
@@ -38,6 +39,7 @@
     display: block;
     margin-bottom: 5px;
     font-weight: bold;
+    font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
     color: #333;
 }
 
@@ -71,6 +73,7 @@
     border-radius: 8px;
     padding: 16px;
     background-color: #f9f9f9;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     width: 100%;
     /* Table takes full width */
@@ -99,7 +102,7 @@ table {
 
 th,
 td {
-    padding: 8px 12px;
+    padding: 10px 12px;
     border: 1px solid #ddd;
 }
 
@@ -111,7 +114,7 @@ th {
 }
 
 td {
-    text-align: left;
+    text-align: center;
 }
 
 
@@ -145,7 +148,7 @@ td {
 
 .status-available {
     background-color: #fffbde;
-    font-weight: bold;
+    font-weight: 500;
     text-transform: capitalize;
     padding: 5px;
     border-radius: 4px;
@@ -157,4 +160,35 @@ td {
     text-transform: capitalize;
     padding: 5px;
     border-radius: 4px;
+}
+
+.alert {
+    padding: 10px 20px;
+    border-radius: 5px;
+    margin-bottom: 10px;
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    width: 400px;
+    height: 50px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 1000;
+    font-family: Arial, sans-serif;
+}
+
+.alert-success {
+    background-color: #70d173;
+    color: white;
+}
+
+.alert-bid {
+    background-color: #3213ca;
+    color: white;
+}
+
+.alert-error {
+    background-color: #e24136;
+    color: white;
 }
