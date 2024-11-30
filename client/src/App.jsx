@@ -1,8 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import axios from "axios";
-
-import "./App.css"; // Add a CSS file for styling
 import { io } from "socket.io-client";
+
+import "./App.css";
+import Alert from "./components/Alert";
+import Loading from "./components/Loading";
 
 const socket = io("http://5.75.237.233:8000/");
 
@@ -15,7 +17,7 @@ function Row({ player, teams }) {
         // Just to start the timer from 90. Idk why it is starting from 110.
         const ms = player.endbid - Date.now();
         clearInterval(timerId);
-        
+
         if (ms > 0) {
             console.log("seconds", parseInt(ms / 1000) - 20);
             setTimer(parseInt(ms / 1000) - 20);
@@ -68,12 +70,14 @@ function App() {
         playerid: "",
         amount: "",
     });
+    const [alert, setAlert] = useState(null);
+    const [loading, setLoading] = useState(false);
+
     const [bids, setBids] = useState({});
 
     async function getTeamData() {
         try {
             const res = await axios.get("http://5.75.237.233:8000/");
-            console.log(res.data); ``
             setTeams(res.data);
         } catch (err) {
             console.error(err);
@@ -81,15 +85,30 @@ function App() {
     }
 
     useEffect(() => {
-        socket.on("error", (data) => {
-            console.log(data);
+        socket.on("error", (msg) => {
+            handleAlert('error', msg);
+        });
+        socket.on("update", (msg) => {
+            getTeamData();
+            handleAlert('bid', msg);
         });
 
-        socket.on("update", () => {
-            getTeamData();
-        });
-        getTeamData();
+        async function firstRender() {
+            try {
+                setLoading(true);
+                await getTeamData();
+                setLoading(false);
+            } catch (error) {
+                handleAlert('error', 'Internal Server Error!');
+            }
+        }
+        firstRender();
     }, []);
+
+    function handleAlert(type, msg) {
+        setAlert({ type, msg });
+        setTimeout(() => setAlert(null), 8000);
+    }
 
     function handleInputChange(e) {
         setBidData({ ...bidData, [e.target.name]: e.target.value });
@@ -97,22 +116,22 @@ function App() {
 
     function handleSubmit(e) {
         e.preventDefault();
+
         const { teamid, playerid, amount } = bidData;
-        if (!teamid || !playerid || !amount) {
-            return;
-        }
+        if (!teamid || !playerid || !amount) return;
 
         socket.emit("bid", {
             teamid: +teamid,
             playerid: +playerid,
             amount: +amount,
         });
-
         setBidData({ teamid: "", playerid: "", amount: "" });
     }
 
     return (
         <div className="container">
+            <Alert alert={alert} />
+
             <form className="bidding-form" onSubmit={handleSubmit}>
                 <h2>Place Your Bid</h2>
                 <div className="form-group">
@@ -157,31 +176,35 @@ function App() {
                 </button>
             </form>
 
-            <div>
-                {teams.map((team, index) => (
-                    <div className="team-table" key={team.teamid}>
-                        <h2>
-                            {team.team} - {team.teamid}
-                        </h2>
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Player Id</th>
-                                    <th>Player Name</th>
-                                    <th>Role</th>
-                                    <th>Price</th>
-                                    <th>Status</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {team.players.map((player) => (
-                                    <Row player={player} teams={teams} key={player._id} />
-                                ))}
-                            </tbody>
-                        </table>
+            {
+                loading
+                    ? <Loading />
+                    : <div>
+                        {teams.map(team => (
+                            <div className="team-table" key={team.teamid}>
+                                <h2>
+                                    {team.team} - {team.teamid}
+                                </h2>
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Player Id</th>
+                                            <th>Player Name</th>
+                                            <th>Role</th>
+                                            <th>Price</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {team.players.map((player) => (
+                                            <Row player={player} teams={teams} key={player._id} />
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        ))}
                     </div>
-                ))}
-            </div>
+            }
         </div>
     );
 }
