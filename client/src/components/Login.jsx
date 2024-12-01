@@ -1,89 +1,82 @@
 import { useEffect, useState } from "react";
-import "../App.css";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
-function Login({showAlert}) {
-  let navigate = useNavigate();
-  const [formData, setFormData] = useState({ teamId: "", password: "" });
+import Alert from "./Alert.jsx";
+import "../App.css";
 
-  function handleInputChange(e) {
-    const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
-  }
+function Login({ alert, showAlert }) {
+    const navigate = useNavigate();
+    const [formData, setFormData] = useState({ teamId: "", password: "" });
 
-  useEffect(()=> {
-    let token = localStorage.getItem("token")
-    if(token){
-        navigate("/")
+    // If a token exists, redirect to the homepage
+    useEffect(() => {
+        let token = localStorage.getItem("token")
+        if (token) return navigate("/");
+    }, []);
+
+    function handleInputChange(e) {
+        const { name, value } = e.target;
+        setFormData({ ...formData, [name]: value });
     }
-  }, [])
 
-  async function handleSubmit(e) {
-    try {
-      e.preventDefault();
-      let {teamId, password} = formData
+    async function handleSubmit(e) {
+        try {
+            e.preventDefault();
 
-      if (!teamId || !password) {
-        showAlert({type : "error", msg :"add something"})
-        return;
-      }
+            const { teamId, password } = formData;
+            const res = await axios.post("http://5.75.237.233:8000/login", { teamId, password });
 
-      let res = await axios.post("http://5.75.237.233:8000/login", {teamId, password});
-      localStorage.setItem("token" , res.data.token);
-      showAlert({type : "success", msg : "login success"})
-      navigate("/")
+            localStorage.setItem("token", res.data.token);
+            showAlert('success', 'Logged In Successfully');
 
-    //   setTimeout(()=> {
-    //   navigate("/")
+            setTimeout(() => navigate("/"), 3000);
+            setFormData({ teamId: "", password: "" });
 
-    //   }, 3000)
-      setFormData({teamId: "", password: ""})
-
-    } catch (err) {
-      if(err.status == 400){
-        return console.log(err.response.data.msg);
-        
-      }
-      console.log(err);
+        } catch (error) {
+            if (error.status == 400)
+                return showAlert('error', 'Invalid Credentials!');
+            return showAlert('error', 'Internal Server Error!');
+        }
     }
-  }
 
-  return (
-    <div className="login-container">
-      <form className="bidding-form login-form" onSubmit={handleSubmit}>
-        <h2>Login</h2>
-        {/* {error && <p className="error-message">{error}</p>} */}
-        <div className="form-group">
-          <label htmlFor="teamId">Team ID:</label>
-          <input
-            type="text"
-            id="teamId"
-            name="teamId"
-            value={formData.teamId}
-            onChange={handleInputChange}
-            placeholder="Enter Team ID"
-            required
-          />
+    return (
+        <div className="login-container">
+            <form className="bidding-form login-form" onSubmit={handleSubmit}>
+                <h2>Login</h2>
+
+                <Alert alert={alert} />
+
+                <div className="form-group">
+                    <label htmlFor="teamId">Team ID:</label>
+                    <input
+                        type="text"
+                        id="teamId"
+                        name="teamId"
+                        value={formData.teamId}
+                        onChange={handleInputChange}
+                        placeholder="Enter Team ID"
+                        required
+                    />
+                </div>
+
+                <div className="form-group">
+                    <label htmlFor="password">Password:</label>
+                    <input
+                        type="password"
+                        id="password"
+                        name="password"
+                        value={formData.password}
+                        onChange={handleInputChange}
+                        placeholder="Enter Password"
+                        required
+                    />
+                </div>
+
+                <button className="submit-btn"> Login </button>
+            </form>
         </div>
-        <div className="form-group">
-          <label htmlFor="password">Password:</label>
-          <input
-            type="password"
-            id="password"
-            name="password"
-            value={formData.password}
-            onChange={handleInputChange}
-            placeholder="Enter Password"
-            required
-          />
-        </div>
-        <button type="submit" className="submit-btn">
-          Login
-        </button>
-      </form>
-    </div>
-  );
+    );
 }
 
 export default Login;
