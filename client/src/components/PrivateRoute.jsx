@@ -3,39 +3,37 @@ import React, { useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
 import Loading from "./Loading";
 
-function PrivateRoute({ component: Component , showAlert}) {
-  const [isAuthenticated, setIsAuthenticated] = useState(null);
-  const [loading, setLoading] = useState(true);
-  useEffect(() => {
-    async function load() {
-      try {
-        const token = localStorage.getItem("token");
-        if(!token){
-            setLoading(false)
-            return setIsAuthenticated(false);
+function PrivateRoute({ element: Component, ...rest }) {
+    const [isAuthenticated, setIsAuthenticated] = useState(false);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        async function authenticateUser() {
+            try {
+                const token = localStorage.getItem("token");
+                if (!token) return setLoading(false);
+
+                let res = await axios.get("http://5.75.237.233:8000/auth", {
+                    headers: { auth: token }
+                });
+
+                // teamid to be used for bidding
+                localStorage.setItem("teamid", res.data.teamId);
+                setLoading(false);
+                setIsAuthenticated(true);
+
+            } catch (err) {
+                setLoading(false);
+                return localStorage.removeItem("token");
+            }
         }
-        let res = await axios.get("http://5.75.237.233:8000/auth", {
-          headers: { auth: token },
-        });
+        authenticateUser();
+    }, []);
 
-        console.log(res.data);
-        
-        setIsAuthenticated(true);
-        localStorage.setItem("teamid", res.data.teamId)
-        setLoading(false);
-      } catch (err) {
-        console.log(err);
-        setLoading(false);
-        const token = localStorage.removeItem("token");
-      }
-    }
-    load();
-  }, []);
+    if (loading) return <Loading />
+    if (!isAuthenticated) return <Navigate to="/login" />
 
-  if (loading) return <Loading/>;
-  if (!isAuthenticated) return <Navigate to="/login" />;
-
-  return <Component showAlert={showAlert} />;
+    return <Component {...rest} />
 }
 
 export default PrivateRoute;
