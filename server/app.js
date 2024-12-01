@@ -23,14 +23,15 @@ const io = new Server(server, {
 app.use(cors());
 app.use(express.json());
 
-const timers = {}
+const timers = {};
+const tokenExpiry = Date.now() + 1000 * 60 * 60 * 8;
 
 // Socket Authentication
 io.use((socket, next) => {
     try {
         const token = socket.handshake.auth.token;
         if (!token) return next(new Error('Token not available!'));
-        const payload = jwt.verify(token, 'sherl0ck');
+        jwt.verify(token, 'sherl0ck');
         return next();
     } catch (error) {
         return next(new Error('Invalid Token!'));
@@ -38,6 +39,7 @@ io.use((socket, next) => {
 });
 
 io.on('connection', (socket) => {
+    setTimeout(() => socket.emit('auction-over'), 1000 * 60 * 60 * 4);
 
     function setTimer(team, player) {
         const { playerid, _id } = player;
@@ -125,7 +127,7 @@ app.post('/login', async (req, res) => {
         if (!isPasswdValid)
             return res.status(400).json({ msg: 'Invalid Credentials!' });
 
-        const token = jwt.sign({ teamId }, 'sherl0ck', { expiresIn: '4h' });
+        const token = jwt.sign({ exp: tokenExpiry, teamId }, 'sherl0ck');
         return res.status(200).json({ token });
 
     } catch (error) {
